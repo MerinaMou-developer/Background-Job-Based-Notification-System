@@ -1,5 +1,6 @@
-from django.utils import timezone
 from rest_framework import serializers
+
+from apps.common.datetime_utils import ensure_aware_bdt, now_utc
 
 from .models import Notification
 
@@ -12,9 +13,10 @@ class NotificationCreateSerializer(serializers.ModelSerializer):
         fields = ("title", "message", "scheduled_time")
 
     def validate_scheduled_time(self, value):
-        if value <= timezone.now():
+        value = ensure_aware_bdt(value)
+        if value <= now_utc():
             raise serializers.ValidationError(
-                "Scheduled time must be in the future."
+                "Scheduled time must be in the future (BDT)."
             )
         return value
 
