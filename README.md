@@ -42,28 +42,36 @@ A per-user notification API built with **Django** and **Django REST Framework**.
 
 ## Architecture
 
-```text
- Client (Postman / Browser)
-        │
-        ▼ JWT
- ┌──────────────┐     ┌─────────────┐
- │  Django API  │────▶│ PostgreSQL  │
- │  (DRF)       │     │ notifications│
- └──────┬───────┘     └─────────────┘
-        │ enqueue (eta = scheduled_time)
-        ▼
- ┌──────────────┐     ┌─────────────┐
- │    Redis     │◀───▶│ Celery      │
- │   (broker)   │     │ Worker      │
- └──────────────┘     └──────┬──────┘
-                             │ SMTP
-                             ▼
-                        Email inbox
+![Notification System Architecture](./docs/architecture.png)
 
- Flower ── monitors Celery tasks (port 5555)
+<details>
+<summary><strong>Text flow (same diagram)</strong></summary>
+
+```text
+Client → JWT Auth → DRF Views → Serializer (future scheduled_time?)
+              │                              │
+              ▼                              ▼
+         PostgreSQL (users)          Save notification
+              │                              │
+              │                              ▼
+              │                    enqueue apply_async(eta)
+              │                              │
+              │                              ▼
+              │                         Redis (broker)
+              │                              │
+              │                              ▼
+              │                      Celery Worker
+              │                         │      │
+              │                         │      └──► SMTP → Email
+              │                         ▼
+              └────────────────── update status (sent / failed)
+
+Flower monitors Celery · Docker: web, db, redis, celery_worker, flower
 ```
 
-Optional diagram: add `docs/architecture.png` and link it here if you export one from draw.io.
+</details>
+
+To edit the diagram: open [draw.io](https://app.diagrams.net/) and follow [`docs/drawio-architecture-guide.md`](./docs/drawio-architecture-guide.md). Export as `docs/architecture.png`.
 
 ---
 
