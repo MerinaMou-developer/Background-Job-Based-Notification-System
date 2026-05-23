@@ -44,35 +44,6 @@ A per-user notification API built with **Django** and **Django REST Framework**.
 
 ![Notification System Architecture](./docs/architecture.png)
 
-<details>
-<summary><strong>Text flow (same diagram)</strong></summary>
-
-```text
-Client → JWT Auth → DRF Views → Serializer (future scheduled_time?)
-              │                              │
-              ▼                              ▼
-         PostgreSQL (users)          Save notification
-              │                              │
-              │                              ▼
-              │                    enqueue apply_async(eta)
-              │                              │
-              │                              ▼
-              │                         Redis (broker)
-              │                              │
-              │                              ▼
-              │                      Celery Worker
-              │                         │      │
-              │                         │      └──► SMTP → Email
-              │                         ▼
-              └────────────────── update status (sent / failed)
-
-Flower monitors Celery · Docker: web, db, redis, celery_worker, flower
-```
-
-</details>
-
-To edit the diagram: open [draw.io](https://app.diagrams.net/) and follow [`docs/drawio-architecture-guide.md`](./docs/drawio-architecture-guide.md). Export as `docs/architecture.png`.
-
 ---
 
 ## Tech Stack
