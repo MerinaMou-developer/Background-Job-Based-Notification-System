@@ -2,7 +2,6 @@ from django.http import HttpRequest, HttpResponse
 
 
 def api_root(request: HttpRequest) -> HttpResponse:
-    base = request.build_absolute_uri("/").rstrip("/")
     endpoints = [
         ("GET", "/", "This API overview page"),
         ("GET", "/admin/", "Django admin"),
@@ -12,12 +11,12 @@ def api_root(request: HttpRequest) -> HttpResponse:
         ("GET", "/api/v1/auth/me/", "Current user profile (Bearer token)"),
         ("GET", "/api/v1/notifications/", "List your notifications (Bearer token)"),
         ("POST", "/api/v1/notifications/", "Create & schedule a notification (Bearer token)"),
-        ("GET", "/api/v1/notifications/<id>/", "Notification detail (Bearer token)"),
-        ("POST", "/api/v1/notifications/<id>/retry/", "Retry a failed notification (Bearer token)"),
+        ("GET", "/api/v1/notifications/{id}/", "Notification detail (Bearer token)"),
+        ("POST", "/api/v1/notifications/{id}/retry/", "Retry a failed notification (Bearer token)"),
     ]
     rows = "".join(
         f'<tr><td><span class="method {m.lower()}">{m}</span></td>'
-        f'<td><a href="{base}{p}">{p}</a></td><td>{d}</td></tr>'
+        f'<td><code>{p}</code></td><td>{d}</td></tr>'
         for m, p, d in endpoints
     )
     html = f"""<!DOCTYPE html>
@@ -36,6 +35,8 @@ def api_root(request: HttpRequest) -> HttpResponse:
     th, td {{ text-align: left; padding: 0.75rem 1rem; border-bottom: 1px solid #eee; }}
     th {{ background: #2d3a8c; color: #fff; font-weight: 600; }}
     tr:last-child td {{ border-bottom: none; }}
+    code {{ font-size: 0.9rem; color: #2d3a8c; background: #f0f2fa; padding: 0.15rem 0.4rem;
+           border-radius: 4px; }}
     a {{ color: #2d3a8c; text-decoration: none; }}
     a:hover {{ text-decoration: underline; }}
     .method {{ font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.5rem;
