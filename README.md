@@ -491,6 +491,18 @@ git config user.email "you@example.com"
 
 ---
 
+## Deploy on Render
+
+Production uses **Gunicorn** + `config.settings.production` (see `Dockerfile` and `scripts/render_start.sh`).
+
+**You need 4 things on Render:** PostgreSQL, Redis, **Web Service** (Docker), **Background Worker** (Celery).
+
+Full step-by-step: **[docs/DEPLOY-RENDER.md](./docs/DEPLOY-RENDER.md)**
+
+Optional one-click: push `render.yaml` → Render **New → Blueprint**.
+
+---
+
 ## Implementation checklist
 
 - [x] Modular settings (`development` / `production` / `testing`)
@@ -503,6 +515,7 @@ git config user.email "you@example.com"
 - [x] Bounded retries and `permanently_failed`
 - [x] Docker Compose (web, db, redis, worker, flower)
 - [x] Flower monitoring
+- [x] Render production Docker (Gunicorn) + deploy guide
 
 ---
 
