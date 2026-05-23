@@ -10,11 +10,10 @@ from .serializers import (
     NotificationCreateSerializer,
     NotificationSerializer,
 )
+from .services import enqueue_notification
 
 
 class NotificationListCreateView(generics.ListCreateAPIView):
-  # list + create for /api/v1/notifications/
-
     def get_queryset(self):
         return Notification.objects.filter(user=self.request.user)
 
@@ -25,9 +24,7 @@ class NotificationListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         notification = serializer.save()
-        # TODO (Celery): enqueue send task with eta=notification.scheduled_time
-        # from .tasks import send_notification
-        # send_notification.apply_async(args=[notification.id], eta=notification.scheduled_time)
+        enqueue_notification(notification)
 
 
 class NotificationDetailView(generics.RetrieveAPIView):
@@ -67,10 +64,14 @@ class NotificationRetryView(APIView):
 
         notification.status = Notification.Status.SCHEDULED
         notification.last_error = ""
-        notification.save(update_fields=["status", "last_error", "updated_at"])
 
-        # TODO (Celery): re-enqueue task
-        # send_notification.apply_async(args=[notification.id], eta=notification.scheduled_time)
+        if notification.scheduled_time <= timezone.now():
+            notification.scheduled_time = timezone.now()
+
+        notification.save(
+            update_fields=["status", "last_error", "scheduled_time", "updated_at"]
+        )
+        enqueue_notification(notification)
 
         return Response(
             NotificationSerializer(notification).data,
