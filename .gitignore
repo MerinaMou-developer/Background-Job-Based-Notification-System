@@ -1,0 +1,12 @@
+# Virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Secrets (never commit real keys/passwords)
+.env
+
+# Local SQLite database 
+*.sqlite3
