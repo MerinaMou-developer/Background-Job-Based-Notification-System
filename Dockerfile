@@ -19,4 +19,4 @@ RUN chmod +x scripts/render_start.sh
 
 EXPOSE 8000
 
-CMD ["/app/scripts/render_start.sh"]
+CMD ["sh", "scripts/render_start.sh"]
