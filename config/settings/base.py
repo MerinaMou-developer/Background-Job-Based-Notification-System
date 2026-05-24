@@ -10,11 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
+import ssl
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-import os
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -164,6 +165,13 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_ENABLE_UTC = True
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+# Upstash / Render use rediss:// (TLS) — required or apply_async raises → HTTP 500
+if CELERY_BROKER_URL.startswith("rediss://"):
+    CELERY_BROKER_USE_SSL = {"ssl_cert_reqs": ssl.CERT_NONE}
+if CELERY_RESULT_BACKEND.startswith("rediss://"):
+    CELERY_REDIS_BACKEND_USE_SSL = {"ssl_cert_reqs": ssl.CERT_NONE}
 
 # Email (Resend SMTP)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
