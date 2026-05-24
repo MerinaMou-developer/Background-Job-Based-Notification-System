@@ -1,9 +1,12 @@
-from django.http import HttpRequest, HttpResponse
+from django.db import connection
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.conf import settings
 
 
 def api_root(request: HttpRequest) -> HttpResponse:
     endpoints = [
         ("GET", "/", "This API overview page"),
+        ("GET", "/health/", "DB + Celery broker connectivity check"),
         ("GET", "/admin/", "Django admin"),
         ("POST", "/api/v1/auth/register/", "Register a new user"),
         ("POST", "/api/v1/auth/login/", "Obtain JWT access & refresh tokens"),
@@ -60,3 +63,39 @@ def api_root(request: HttpRequest) -> HttpResponse:
 </body>
 </html>"""
     return HttpResponse(html)
+
+
+def health_check(request: HttpRequest) -> JsonResponse:
+    """Public check for Render debugging — shows DB and Redis/Celery broker status."""
+    result = {
+        "database": "unknown",
+        "celery_broker": "unknown",
+        "django_settings": settings.SETTINGS_MODULE,
+    }
+    http_status = 200
+
+    try:
+        connection.ensure_connection()
+        result["database"] = "ok"
+    except Exception as exc:
+        result["database"] = f"error: {exc}"
+        http_status = 503
+
+    broker = settings.CELERY_BROKER_URL
+    if "@" in broker:
+        result["broker_host"] = broker.split("@", 1)[1]
+    else:
+        result["broker_host"] = broker
+
+    try:
+        from celery import current_app
+
+        conn = current_app.connection()
+        conn.ensure_connection(max_retries=1)
+        conn.release()
+        result["celery_broker"] = "ok"
+    except Exception as exc:
+        result["celery_broker"] = f"error: {exc}"
+        http_status = 503
+
+    return JsonResponse(result, status=http_status)
