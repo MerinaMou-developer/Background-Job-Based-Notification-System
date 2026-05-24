@@ -495,11 +495,12 @@ git config user.email "you@example.com"
 
 Production uses **Gunicorn** + `config.settings.production` (see `Dockerfile` and `scripts/render_start.sh`).
 
-**You need 4 things on Render:** PostgreSQL, Redis, **Web Service** (Docker), **Background Worker** (Celery).
+**Free Render (no paid worker):** Neon Postgres + Upstash Redis + **one Web Service** (Docker).  
+`scripts/render_start.sh` runs **Gunicorn + Celery worker** in the same container so recruiters can test email without my laptop.
 
-Full step-by-step: **[docs/DEPLOY-RENDER.md](./docs/DEPLOY-RENDER.md)**
+Set `WEB_CONCURRENCY=1` on Render free tier (512 MB RAM).
 
-Optional one-click: push `render.yaml` → Render **New → Blueprint**.
+Optional paid: separate **Background Worker** service instead of in-container Celery.
 
 ---
 
