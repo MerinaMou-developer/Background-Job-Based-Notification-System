@@ -22,6 +22,15 @@ class NotificationListCreateView(generics.ListCreateAPIView):
             return NotificationCreateSerializer
         return NotificationSerializer
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(
+            NotificationSerializer(serializer.instance).data,
+            status=status.HTTP_201_CREATED,
+        )
+
     def perform_create(self, serializer):
         notification = serializer.save()
         enqueue_notification(notification)

@@ -73,13 +73,19 @@ docker compose down
 
 ---
 
-## Quick test (Postman)
+## Postman (for reviewers)
 
-1. `POST /api/v1/auth/register/` — email, password, password_confirm  
-2. `POST /api/v1/auth/login/` — copy `access` token  
-3. Header: `Authorization: Bearer <access>`  
-4. `POST /api/v1/notifications/` — set `scheduled_time` **2–3 minutes ahead** (BDT, e.g. `2026-05-24T15:30:00+06:00`)  
-5. After that time → `GET /api/v1/notifications/` → `status` should be `sent` (check register email + spam)
+Import: [`postman/Notification-System.postman_collection.json`](./postman/Notification-System.postman_collection.json)
+
+1. **Import** → select that file  
+2. Collection **Variables** → `base_url`:  
+   - Local: `http://127.0.0.1:8000`  
+   - Live: `https://background-job-based-notification-system-kex6.onrender.com`  
+3. Run in order: **Register** → **Login** (saves token) → **Create notification** (auto 3 min ahead)  
+4. Wait ~3 minutes → **List notifications** → `status` should be `sent`  
+5. Email goes to the address used in **Register** (check spam)
+
+Default test user in collection: `reviewer@example.com` / `ReviewPass123!` — change if already registered.
 
 ---
 
